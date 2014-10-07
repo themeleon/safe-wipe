@@ -25,6 +25,7 @@ You can configure the following variables:
 | `parent` | A (supposed) parent directory of the directory to wipe. If the parent is contained in the directory to wipe, the process will be aborted in all cases. |
 | `interactive` | Whether the session is interactive. `true` by default. |
 | `force` | Whether to force the wipe if the folder is not empty. `false` by default. |
+| `silent` | The error messages are not printed if this is et to `true`. `false` by default. |
 | `messages` | An object of messages for user prompt and error display. |
 
 The messages are:

@@ -55,6 +55,7 @@ function defaults(config) {
     parent: null,
     interactive: true,
     force: false,
+    silent: false,
   }, config || {});
 
   config.messages = extend({
@@ -84,10 +85,12 @@ function safeWipeRaw(dir, config) {
   p = p.then(function () {return checkEmpty(dir, config);});
   p = p.then(function () {return rimraf(dir);});
 
-  p = p.fail(function (e) {
-    config.stderr.write(e.message + '\n');
-    throw e;
-  });
+  if (!config.silent) {
+    p = p.fail(function (e) {
+      config.stderr.write(e.message + '\n');
+      throw e;
+    });
+  }
 
   return p;
 }
