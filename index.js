@@ -11,18 +11,18 @@ var rimraf = Q.denodeify(require('rimraf'));
 /**
  * If the first argument is an object, it's treated as the configuration
  * object to create a new "instance", and a new function will be
- * returned (see {@link maybeWipeNew}).
+ * returned (see {@link safeWipeNew}).
  *
  * @param  {String} dir Directory to wipe.
  * @param  {Object} config Optional config.
  * @return {Q.Promise}
  */
-module.exports = function maybeWipe(dir, config) {
+module.exports = function safeWipe(dir, config) {
   if (typeof dir === 'object') {
-    return maybeWipeNew(dir);
+    return safeWipeNew(dir);
   }
 
-  return maybeWipeRaw(dir, defaults(config));
+  return safeWipeRaw(dir, defaults(config));
 };
 
 /**
@@ -31,11 +31,11 @@ module.exports = function maybeWipe(dir, config) {
  * @param  {Object} config
  * @return {Function}
  */
-function maybeWipeNew(config) {
+function safeWipeNew(config) {
   config = defaults(config);
 
   return function (dir) {
-    maybeWipeRaw(dir, config);
+    safeWipeRaw(dir, config);
   };
 }
 
@@ -68,7 +68,7 @@ function defaults(config) {
  * @param  {Object} config
  * @return {Q.Promise}
  */
-function maybeWipeRaw(dir, config) {
+function safeWipeRaw(dir, config) {
   var promises = [];
 
   if (config.parent) {
