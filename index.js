@@ -134,7 +134,7 @@ function checkEmpty(dir, config) {
     }
 
     if (!config.interactive) {
-      throw createError(config.message.abort, 'ABORT');
+      throw createError(config.messages.abort, 'ABORT');
     }
 
     return prompt(config.messages.confirm, config).then(function (answer) {
