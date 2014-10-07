@@ -18,31 +18,31 @@ user's confirmation.
 
 You can configure the following variables:
 
-* `stdin`, `stdout`, `stderr`: streams to use for I/O. Defaults to
-  the `process` streams.
-* `ignore`: an array of files to ignore when checking if a directory is
-  empty. Defaults to `.DS_Store` and `Thumbs.db`.
-* `parent`: a (supposed) parent directory of the directory to wipe. If
-  the parent is contained in the directory to wipe, the process will be
-  aborted in all cases.
-* `interactive`: whether the session is interactive. `true` by default.
-* `force`: whether to force the wipe if the folder is not empty. `false`
-  by default.
-* `messages`: an object of messages for user prompt and error display.
-  * `contained`: error message when the folder to wipe is contained in
-    the configured parent folder.
-  * `confirm`: text to prompt the user to confirm the (not empty)
-    directory wipe.
-  * `abort`: error message when the user refuses to wipe the folder.
+| Name | Description |
+| ---- | ----------- |
+| `stdin`, `stdout`, `stderr` | Streams to use for I/O. Defaults to the `process` streams. |
+| `ignore` | An array of files to ignore when checking if a directory is empty. Defaults to `.DS_Store` and `Thumbs.db`. |
+| `parent` | A (supposed) parent directory of the directory to wipe. If the parent is contained in the directory to wipe, the process will be aborted in all cases. |
+| `interactive` | Whether the session is interactive. `true` by default. |
+| `force` | Whether to force the wipe if the folder is not empty. `false` by default. |
+| `messages` | An object of messages for user prompt and error display. |
+
+The messages are:
+
+| Name | Description |
+| ---- | ----------- |
+| `contained` | Error message when the folder to wipe is contained in the configured parent folder. |
+| `confirm` | Text to prompt the user to confirm the (not empty) directory wipe. |
+| `abort` | Error message when the user refuses to wipe the folder. |
 
 The function is asynchronous and return a promise. Nothing is passed to
 the success function, but you'll get an `Error` instance in the error
 function. It can have the following `code` property:
 
-* `CONTAINED`: refused to remove the directory since it's containing the
-  supposed parent.
-* `ABORT`: the user aborted the operation (or we're not in an
-  interactive session and `config.force` is `false`).
+| Code | Description |
+| ---- | ----------- |
+| `CONTAINED` | Refused to remove the directory since it's containing the supposed parent. |
+| `ABORT` | The user aborted the operation (or we're not in an interactive session and `config.force` is `false`). |
 
 Examples
 --------
