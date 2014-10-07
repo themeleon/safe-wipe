@@ -3,21 +3,153 @@
 var fs = require('fs');
 var path = require('path');
 var readline = require('readline');
+
 var Q = require('q');
+var extend = require('extend');
+var rimraf = Q.denodeify(require('rimraf'));
+
+/**
+ * If the first argument is an object, it's treated as the configuration
+ * object to create a new "instance", and a new function will be
+ * returned (see {@link maybeWipeNew}).
+ *
+ * @param  {String} dir Directory to wipe.
+ * @param  {Object} config Optional config.
+ * @return {Q.Promise}
+ */
+module.exports = function maybeWipe(dir, config) {
+  if (typeof dir === 'object') {
+    return maybeWipeNew(dir);
+  }
+
+  return maybeWipeRaw(dir, defaults(config));
+};
+
+/**
+ * Create a wipe function with given config.
+ *
+ * @param  {Object} config
+ * @return {Function}
+ */
+function maybeWipeNew(config) {
+  config = defaults(config);
+
+  return function (dir) {
+    maybeWipeRaw(dir, config);
+  };
+}
+
+/**
+ * Apply default values to given config object.
+ *
+ * @param  {Object} config
+ * @return {Object}
+ */
+function defaults(config) {
+  config = extend({
+    input: process.stdin,
+    output: process.stdout,
+    ignore: ['.DS_Store', 'Thumbs.db'],
+    parent: null,
+    interactive: true,
+  }, config || {});
+
+  config.messages = extend({
+    contained: 'Source folder seems to be contained by destination folder.\nLet\'s not wipe everything out.',
+    confirm: '[?] Destination folder will be wiped out. Are you sure you want to proceed: [y/N]',
+    abort: 'Destination folder not empty, aborting',
+  }, config.messages || {});
+
+  return config;
+}
+
+/**
+ * @param  {String} dir
+ * @param  {Object} config
+ * @return {Q.Promise}
+ */
+function maybeWipeRaw(dir, config) {
+  var promises = [];
+
+  if (config.parent) {
+    // Do not wipe if `dir` is a parent of supposed `config.parent`
+    promises.push(checkParent(dir, config));
+  }
+
+  if (!config.interactive) {
+    promises.push(checkEmpty(dir));
+  }
+
+  promises.push(rimraf(dir));
+
+  // Execute promises sequentially
+  return promises.reduce(function (a, b) {
+    return a.then(function () {
+      return b;
+    });
+  });
+}
+
+/**
+  * Check parent relation between `dir` and `config.parent`.
+  *
+  * @param  {String} dir
+  * @param  {Object} config
+  * @return {Q.Promise}
+  */
+function checkParent(dir, config) {
+  var deferred = Q.defer();
+
+  if (!isParent(dir, config.parent)) {
+    deferred.resolve();
+  } else {
+    deferred.reject(new Error(config.messages.contained));
+  }
+
+  return deferred.promise;
+}
+
+/**
+ * Check if the directory is considered as empty, otherwise prompt the
+ * user for confirmation if allowed.
+ *
+ * @param  {String} dir
+ * @param  {Object} config
+ * @return {Q.Promise}
+*/
+function checkEmpty(dir, config) {
+  /*eslint-disable consistent-return */
+  return isEmpty(dir, config).then(function (empty) {
+
+    if (empty) {
+      return;
+    }
+
+    return prompt(config.messages.question, config).then(function (answer) {
+      var proceed = /^y(es)?/i.test(answer);
+
+      if (!proceed) {
+        throw new Error(config.messages.abort);
+      }
+    });
+  });
+  /*eslint-enable consistent-return */
+}
 
 /**
  * Prompt user with a question and listen to reply.
  *
- * @see    {@link http://nodejs.org/api/readline.html}
  * @param  {String} question
+ * @param  {Object} config
  * @return {Q.Promise}
+ * @see    {@link http://nodejs.org/api/readline.html}
  */
-function prompt(question) {
+function prompt(question, config) {
   var deferred = Q.defer();
 
   var rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
+    input: config.input,
+    output: config.output,
   });
 
   rl.question(question, function (answer) {
@@ -29,121 +161,35 @@ function prompt(question) {
 }
 
 /**
- * Check whether dest is a parent of src, or identical.
+ * Check whether `parent` is a parent of `dir` or identical.
  *
- * @param  {String} src
- * @param  {String} dest
+ * @param  {String} dir
+ * @param  {String} parent
  * @return {Boolean}
  */
-function isParent(src, dest) {
-  return path.resolve(src).indexOf(path.resolve(dest)) === 0;
+function isParent(dir, parent) {
+  return path.resolve(dir).indexOf(path.resolve(parent)) === 0;
 }
 
 /**
  * Check whether passed directory is empty or does not exist.
  *
- * @param  {String} dest
+ * @param  {String} dir
+ * @param  {Object} config
  * @return {Q.Promise}
  */
-function isEmpty(dest) {
-  return Q.nfcall(fs.readdir, dest)
-    .then(function (files) {
-      return files.filter(function (file) {
-        return ['.DS_Store', 'Thumbs.db'].indexOf(file) === -1;
-      });
-    })
-    .then(function (files) {
-      return !files || !files.length;
-    })
-    .catch(function (err) {
-      if (err.code === 'ENOENT') {
-        return true;
-      }
-      else {
-        throw err;
-      }
+function isEmpty(dir, config) {
+  return Q.nfcall(fs.readdir, dir).then(function (files) {
+    files = files.filter(function (file) {
+      return config.ignore.indexOf(file) === -1;
     });
+
+    return files.length === 0;
+  }).catch(function (e) {
+    if (e.code === 'ENOENT') {
+      return true;
+    }
+
+    throw e;
+  });
 }
-
-exports = module.exports = {
-
-  /**
-   * Check tree relation between src and dest.
-   *
-   * @param  {String} src
-   * @param  {String} dest
-   * @return {Q.Promise}
-   */
-  checkTree: function (src, dest) {
-    var deferred = Q.defer();
-
-    if (isParent(src, dest)) {
-      deferred.reject(new Error(
-        'Source folder seems to be contained by destination folder.' + '\n' +
-        'Let\'s not wipe everything out.'
-      ));
-    }
-    else {
-      deferred.resolve();
-    }
-
-    return deferred.promise;
-  },
-
-  /**
-   * Check whether SassDoc can securely wip destination folder.
-   *
-   * @param  {String} dest
-   * @return {Q.Promise}
-   */
-  checkDest: function (dest) {
-    var question = '[?] Destination folder will be wiped out. ' +
-                   'Are you sure you want to proceed: [y/N] ';
-    var deferred = Q.defer();
-
-    isEmpty(dest)
-      .then(function (empty) {
-        if (!empty) {
-          prompt(question)
-            .then(function (answer) {
-              var proceed = /^y(es)?/i.test(answer);
-
-              if (!proceed) {
-                deferred.reject(new Error(
-                  'Destination folder not empty, aborting'
-                ));
-              }
-              else {
-                deferred.resolve();
-              }
-            });
-        }
-        else {
-          deferred.resolve();
-        }
-      });
-
-    return deferred.promise;
-  },
-
-  /**
-   * Performs checks on destination folder before securely wiping it.
-   *
-   * @param  {Object} options
-   * @return {Q.Promise}
-   */
-  check: function (options) {
-    var src = options['<src>'];
-    var dest = options['<dest>'];
-    var promises = [];
-
-    promises.push(exports.checkTree(src, dest));
-
-    if (!options['--no-prompt']) {
-      promises.push(exports.checkDest(dest));
-    }
-
-    return Q.all(promises);
-  }
-
-};
