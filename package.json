@@ -1,0 +1,41 @@
+{
+  "name": "maybe-wipe",
+  "version": "0.1.0",
+
+  "homepage": "https://github.com/SassDoc/maybe-wipe",
+  "bugs": "https://github.com/SassDoc/maybe-wipe/issues",
+
+  "license": {
+    "type": "Unlicense",
+    "url": "http://unlicense.org/"
+  },
+
+  "contributors": [
+    {
+      "name": "Pascal Duez",
+      "url": "https://github.com/pascalduez"
+    },
+    {
+      "name": "Valérian Galliat",
+      "url": "http://val.codejam.info/"
+    }
+  ],
+
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SassDoc/maybe-wipe.git"
+  },
+
+  "scripts": {
+    "test": "eslint index.js"
+  },
+
+  "dependencies": {
+    "q": "1.*",
+    "rimraf": "2.*"
+  },
+
+  "devDependencies": {
+    "eslint": "0.*"
+  }
+}
