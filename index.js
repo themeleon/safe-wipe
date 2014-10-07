@@ -105,10 +105,10 @@ function safeWipeRaw(dir, config) {
 function checkParent(dir, config) {
   var deferred = Q.defer();
 
-  if (isParent(dir, config.parent)) {
-    deferred.resolve();
-  } else {
+  if (isParent(config.parent, dir)) {
     deferred.reject(createError(config.messages.contained, 'CONTAINED'));
+  } else {
+    deferred.resolve();
   }
 
   return deferred.promise;
