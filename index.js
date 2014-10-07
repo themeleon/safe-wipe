@@ -13,8 +13,8 @@ var rimraf = Q.denodeify(require('rimraf'));
  * object to create a new "instance", and a new function will be
  * returned (see {@link safeWipeNew}).
  *
- * @param  {String} dir Directory to wipe.
- * @param  {Object} config Optional config.
+ * @param {String} dir Directory to wipe.
+ * @param {Object} config Optional config.
  * @return {Q.Promise}
  */
 module.exports = function safeWipe(dir, config) {
@@ -28,7 +28,7 @@ module.exports = function safeWipe(dir, config) {
 /**
  * Create a wipe function with given config.
  *
- * @param  {Object} config
+ * @param {Object} config
  * @return {Function}
  */
 function safeWipeNew(config) {
@@ -42,7 +42,7 @@ function safeWipeNew(config) {
 /**
  * Apply default values to given config object.
  *
- * @param  {Object} config
+ * @param {Object} config
  * @return {Object}
  */
 function defaults(config) {
@@ -64,8 +64,8 @@ function defaults(config) {
 }
 
 /**
- * @param  {String} dir
- * @param  {Object} config
+ * @param {String} dir
+ * @param {Object} config
  * @return {Q.Promise}
  */
 function safeWipeRaw(dir, config) {
@@ -91,12 +91,12 @@ function safeWipeRaw(dir, config) {
 }
 
 /**
-  * Check parent relation between `dir` and `config.parent`.
-  *
-  * @param  {String} dir
-  * @param  {Object} config
-  * @return {Q.Promise}
-  */
+ * Check parent relation between `dir` and `config.parent`.
+ *
+ * @param {String} dir
+ * @param {Object} config
+ * @return {Q.Promise}
+ */
 function checkParent(dir, config) {
   var deferred = Q.defer();
 
@@ -113,8 +113,8 @@ function checkParent(dir, config) {
  * Check if the directory is considered as empty, otherwise prompt the
  * user for confirmation if allowed.
  *
- * @param  {String} dir
- * @param  {Object} config
+ * @param {String} dir
+ * @param {Object} config
  * @return {Q.Promise}
 */
 function checkEmpty(dir, config) {
@@ -139,10 +139,10 @@ function checkEmpty(dir, config) {
 /**
  * Prompt user with a question and listen to reply.
  *
- * @param  {String} question
- * @param  {Object} config
+ * @param {String} question
+ * @param {Object} config
  * @return {Q.Promise}
- * @see    {@link http://nodejs.org/api/readline.html}
+ * @see {@link http://nodejs.org/api/readline.html}
  */
 function prompt(question, config) {
   var deferred = Q.defer();
@@ -163,8 +163,8 @@ function prompt(question, config) {
 /**
  * Check whether `parent` is a parent of `dir` or identical.
  *
- * @param  {String} dir
- * @param  {String} parent
+ * @param {String} dir
+ * @param {String} parent
  * @return {Boolean}
  */
 function isParent(dir, parent) {
@@ -174,8 +174,8 @@ function isParent(dir, parent) {
 /**
  * Check whether passed directory is empty or does not exist.
  *
- * @param  {String} dir
- * @param  {Object} config
+ * @param {String} dir
+ * @param {Object} config
  * @return {Q.Promise}
  */
 function isEmpty(dir, config) {
