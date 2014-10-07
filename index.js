@@ -59,7 +59,7 @@ function defaults(config) {
 
   config.messages = extend({
     contained: 'Source folder seems to be contained by destination folder.\nLet\'s not wipe everything out.',
-    confirm: '[?] Destination folder will be wiped out. Are you sure you want to proceed: [y/N]',
+    confirm: '[?] Destination folder will be wiped out. Are you sure you want to proceed? [y/N] ',
     abort: 'Destination folder not empty, aborting',
   }, config.messages || {});
 
