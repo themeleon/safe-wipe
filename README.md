@@ -1,4 +1,4 @@
-# `safe-wipe`
+# safe-wipe [![npm version](http://img.shields.io/npm/v/safe-wipe.svg?style=flat-square)](https://www.npmjs.org/package/safe-wipe)
 
 > Safely wipe a folder.
 
