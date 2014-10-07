@@ -48,8 +48,9 @@ function safeWipeNew(config) {
  */
 function defaults(config) {
   config = extend({
-    input: process.stdin,
-    output: process.stdout,
+    stdin: process.stdin,
+    stdout: process.stdout,
+    stderr: process.stderr,
     ignore: ['.DS_Store', 'Thumbs.db'],
     parent: null,
     interactive: true,
@@ -84,7 +85,7 @@ function safeWipeRaw(dir, config) {
   p = p.then(function () {return rimraf(dir);});
 
   p = p.fail(function (e) {
-    console.error(e.message);
+    config.stderr.write(e.message + '\n');
     throw e;
   });
 
@@ -156,8 +157,8 @@ function prompt(question, config) {
   var deferred = Q.defer();
 
   var rl = readline.createInterface({
-    input: config.input,
-    output: config.output,
+    input: config.stdin,
+    output: config.stdout,
   });
 
   rl.question(question, function (answer) {
