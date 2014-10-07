@@ -53,6 +53,7 @@ function defaults(config) {
     ignore: ['.DS_Store', 'Thumbs.db'],
     parent: null,
     interactive: true,
+    force: false,
   }, config || {});
 
   config.messages = extend({
@@ -122,6 +123,14 @@ function checkEmpty(dir, config) {
   return isEmpty(dir, config).then(function (empty) {
     if (empty) {
       return;
+    }
+
+    if (config.force) {
+      return;
+    }
+
+    if (!config.interactive) {
+      throw createError(config.message.abort, 'ABORT');
     }
 
     return prompt(config.messages.confirm, config).then(function (answer) {
