@@ -7,6 +7,7 @@ var readline = require('readline');
 var Q = require('q');
 var extend = require('extend');
 var rimraf = Q.denodeify(require('rimraf'));
+var readdir = Q.denodeify(fs.readdir);
 
 /**
  * If the first argument is an object, it's treated as the configuration
@@ -69,25 +70,24 @@ function defaults(config) {
  * @return {Q.Promise}
  */
 function safeWipeRaw(dir, config) {
-  var promises = [];
+  /*eslint-disable new-cap */
+  var p = Q();
+  /*eslint-enable new-cap */
 
   if (config.parent) {
     // Do not wipe if `dir` is a parent of supposed `config.parent`
-    promises.push(checkParent(dir, config));
+    p = p.then(function () {return checkParent(dir, config);});
   }
 
-  if (!config.interactive) {
-    promises.push(checkEmpty(dir));
-  }
+  p = p.then(function () {return checkEmpty(dir, config);});
+  p = p.then(function () {return rimraf(dir);});
 
-  promises.push(rimraf(dir));
-
-  // Execute promises sequentially
-  return promises.reduce(function (a, b) {
-    return a.then(function () {
-      return b;
-    });
+  p = p.fail(function (e) {
+    console.error(e.message);
+    throw e;
   });
+
+  return p;
 }
 
 /**
@@ -100,10 +100,10 @@ function safeWipeRaw(dir, config) {
 function checkParent(dir, config) {
   var deferred = Q.defer();
 
-  if (!isParent(dir, config.parent)) {
+  if (isParent(dir, config.parent)) {
     deferred.resolve();
   } else {
-    deferred.reject(new Error(config.messages.contained));
+    deferred.reject(createError(config.messages.contained, 'CONTAINED'));
   }
 
   return deferred.promise;
@@ -120,16 +120,15 @@ function checkParent(dir, config) {
 function checkEmpty(dir, config) {
   /*eslint-disable consistent-return */
   return isEmpty(dir, config).then(function (empty) {
-
     if (empty) {
       return;
     }
 
-    return prompt(config.messages.question, config).then(function (answer) {
+    return prompt(config.messages.confirm, config).then(function (answer) {
       var proceed = /^y(es)?/i.test(answer);
 
       if (!proceed) {
-        throw new Error(config.messages.abort);
+        throw createError(config.messages.abort, 'ABORT');
       }
     });
   });
@@ -179,8 +178,8 @@ function isParent(dir, parent) {
  * @return {Q.Promise}
  */
 function isEmpty(dir, config) {
-  return Q.nfcall(fs.readdir, dir).then(function (files) {
-    files = files.filter(function (file) {
+  return readdir(dir).then(function (files) {
+    files.filter(function (file) {
       return config.ignore.indexOf(file) === -1;
     });
 
@@ -192,4 +191,15 @@ function isEmpty(dir, config) {
 
     throw e;
   });
+}
+
+/**
+ * @param {String} message
+ * @param {String} code
+ * @return {Error}
+ */
+function createError(message, code) {
+  var e = new Error(message);
+  e.code = code;
+  return e;
 }
