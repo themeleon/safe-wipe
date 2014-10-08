@@ -192,7 +192,7 @@ function isParent(dir, parent) {
  */
 function isEmpty(dir, config) {
   return readdir(dir).then(function (files) {
-    files.filter(function (file) {
+    files = files.filter(function (file) {
       return config.ignore.indexOf(file) === -1;
     });
 
