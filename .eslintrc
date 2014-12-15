@@ -1,9 +1,9 @@
 env:
-    node: true
+    node: true,
+    mocha: true
 
 rules:
     quotes: single
-    no-comma-dangle: false
-    no-underscore-dangle: false
+    no-comma-dangle: 0
     no-use-before-define: nofunc
-    no-alert: false
+    no-alert: 0
