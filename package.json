@@ -5,10 +5,7 @@
   "homepage": "https://github.com/themeleon/safe-wipe",
   "bugs": "https://github.com/themeleon/safe-wipe/issues",
 
-  "license": {
-    "type": "Unlicense",
-    "url": "http://unlicense.org/"
-  },
+  "license": "Unlicense",
 
   "contributors": [
     {
