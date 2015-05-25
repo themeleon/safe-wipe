@@ -1,12 +1,9 @@
 {
   "name": "safe-wipe",
-  "version": "0.2.3",
-
+  "version": "0.2.4",
   "homepage": "https://github.com/themeleon/safe-wipe",
   "bugs": "https://github.com/themeleon/safe-wipe/issues",
-
   "license": "Unlicense",
-
   "contributors": [
     {
       "name": "Pascal Duez",
@@ -17,22 +14,18 @@
       "url": "http://val.codejam.info/"
     }
   ],
-
   "repository": {
     "type": "git",
     "url": "https://github.com/themeleon/safe-wipe.git"
   },
-
   "scripts": {
     "test": "eslint index.js"
   },
-
   "dependencies": {
     "extend": "2.*",
     "q": "1.*",
     "rimraf": "2.*"
   },
-
   "devDependencies": {
     "eslint": "0.*"
   }
