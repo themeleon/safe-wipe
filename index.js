@@ -1,13 +1,11 @@
-'use strict';
+var fs = require('fs')
+var path = require('path')
+var readline = require('readline')
 
-var fs = require('fs');
-var path = require('path');
-var readline = require('readline');
-
-var Q = require('q');
-var extend = require('extend');
-var rimraf = Q.denodeify(require('rimraf'));
-var readdir = Q.denodeify(fs.readdir);
+var Q = require('q')
+var extend = require('extend')
+var rimraf = Q.denodeify(require('rimraf'))
+var readdir = Q.denodeify(fs.readdir)
 
 /**
  * If the first argument is an object, it's treated as the configuration
@@ -18,13 +16,13 @@ var readdir = Q.denodeify(fs.readdir);
  * @param {Object} config Optional config.
  * @return {Q.Promise}
  */
-module.exports = function safeWipe(dir, config) {
+module.exports = function safeWipe (dir, config) {
   if (typeof dir === 'object') {
-    return safeWipeNew(dir);
+    return safeWipeNew(dir)
   }
 
-  return safeWipeRaw(dir, defaults(config));
-};
+  return safeWipeRaw(dir, defaults(config))
+}
 
 /**
  * Create a wipe function with given config.
@@ -32,12 +30,12 @@ module.exports = function safeWipe(dir, config) {
  * @param {Object} config
  * @return {Function}
  */
-function safeWipeNew(config) {
-  config = defaults(config);
+function safeWipeNew (config) {
+  config = defaults(config)
 
   return function (dir) {
-    safeWipeRaw(dir, config);
-  };
+    safeWipeRaw(dir, config)
+  }
 }
 
 /**
@@ -46,7 +44,7 @@ function safeWipeNew(config) {
  * @param {Object} config
  * @return {Object}
  */
-function defaults(config) {
+function defaults (config) {
   config = extend({
     stdin: process.stdin,
     stdout: process.stdout,
@@ -55,16 +53,16 @@ function defaults(config) {
     parent: null,
     interactive: true,
     force: false,
-    silent: false,
-  }, config || {});
+    silent: false
+  }, config || {})
 
   config.messages = extend({
-    contained: 'Source folder seems to be contained by destination folder.\nLet\'s not wipe everything out.',
+    contained: "Source folder seems to be contained by destination folder.\nLet's not wipe everything out.",
     confirm: '[?] Destination folder will be wiped out. Are you sure you want to proceed? [y/N] ',
-    abort: 'Destination folder not empty, aborting',
-  }, config.messages || {});
+    abort: 'Destination folder not empty, aborting'
+  }, config.messages || {})
 
-  return config;
+  return config
 }
 
 /**
@@ -72,27 +70,27 @@ function defaults(config) {
  * @param {Object} config
  * @return {Q.Promise}
  */
-function safeWipeRaw(dir, config) {
+function safeWipeRaw (dir, config) {
   /*eslint-disable new-cap */
-  var p = Q();
+  var p = Q()
   /*eslint-enable new-cap */
 
   if (config.parent) {
     // Do not wipe if `dir` is a parent of supposed `config.parent`
-    p = p.then(function () {return checkParent(dir, config);});
+    p = p.then(function () { return checkParent(dir, config) })
   }
 
-  p = p.then(function () {return checkEmpty(dir, config);});
-  p = p.then(function () {return rimraf(dir);});
+  p = p.then(function () { return checkEmpty(dir, config) })
+  p = p.then(function () { return rimraf(dir) })
 
   if (!config.silent) {
     p = p.fail(function (e) {
-      config.stderr.write(e.message + '\n');
-      throw e;
-    });
+      config.stderr.write(e.message + '\n')
+      throw e
+    })
   }
 
-  return p;
+  return p
 }
 
 /**
@@ -102,16 +100,16 @@ function safeWipeRaw(dir, config) {
  * @param {Object} config
  * @return {Q.Promise}
  */
-function checkParent(dir, config) {
-  var deferred = Q.defer();
+function checkParent (dir, config) {
+  var deferred = Q.defer()
 
   if (isParent(config.parent, dir)) {
-    deferred.reject(createError(config.messages.contained, 'CONTAINED'));
+    deferred.reject(createError(config.messages.contained, 'CONTAINED'))
   } else {
-    deferred.resolve();
+    deferred.resolve()
   }
 
-  return deferred.promise;
+  return deferred.promise
 }
 
 /**
@@ -122,30 +120,30 @@ function checkParent(dir, config) {
  * @param {Object} config
  * @return {Q.Promise}
 */
-function checkEmpty(dir, config) {
+function checkEmpty (dir, config) {
   /*eslint-disable consistent-return */
   return isEmpty(dir, config).then(function (empty) {
     if (empty) {
-      return;
+      return
     }
 
     if (config.force) {
-      return;
+      return
     }
 
     if (!config.interactive) {
-      throw createError(config.messages.abort, 'ABORT');
+      throw createError(config.messages.abort, 'ABORT')
     }
 
     return prompt(config.messages.confirm, config).then(function (answer) {
-      var proceed = /^y(es)?/i.test(answer);
+      var proceed = /^y(es)?/i.test(answer)
 
       if (!proceed) {
-        throw createError(config.messages.abort, 'ABORT');
+        throw createError(config.messages.abort, 'ABORT')
       }
-    });
-  });
-  /*eslint-enable consistent-return */
+    })
+  })
+/*eslint-enable consistent-return */
 }
 
 /**
@@ -156,20 +154,20 @@ function checkEmpty(dir, config) {
  * @return {Q.Promise}
  * @see {@link http://nodejs.org/api/readline.html}
  */
-function prompt(question, config) {
-  var deferred = Q.defer();
+function prompt (question, config) {
+  var deferred = Q.defer()
 
   var rl = readline.createInterface({
     input: config.stdin,
-    output: config.stdout,
-  });
+    output: config.stdout
+  })
 
   rl.question(question, function (answer) {
-    rl.close();
-    deferred.resolve(answer);
-  });
+    rl.close()
+    deferred.resolve(answer)
+  })
 
-  return deferred.promise;
+  return deferred.promise
 }
 
 /**
@@ -179,8 +177,8 @@ function prompt(question, config) {
  * @param {String} parent
  * @return {Boolean}
  */
-function isParent(dir, parent) {
-  return path.resolve(dir).indexOf(path.resolve(parent)) === 0;
+function isParent (dir, parent) {
+  return path.resolve(dir).indexOf(path.resolve(parent)) === 0
 }
 
 /**
@@ -190,20 +188,20 @@ function isParent(dir, parent) {
  * @param {Object} config
  * @return {Q.Promise}
  */
-function isEmpty(dir, config) {
+function isEmpty (dir, config) {
   return readdir(dir).then(function (files) {
     files = files.filter(function (file) {
-      return config.ignore.indexOf(file) === -1;
-    });
+      return config.ignore.indexOf(file) === -1
+    })
 
-    return files.length === 0;
+    return files.length === 0
   }).catch(function (e) {
     if (e.code === 'ENOENT') {
-      return true;
+      return true
     }
 
-    throw e;
-  });
+    throw e
+  })
 }
 
 /**
@@ -211,8 +209,8 @@ function isEmpty(dir, config) {
  * @param {String} code
  * @return {Error}
  */
-function createError(message, code) {
-  var e = new Error(message);
-  e.code = code;
-  return e;
+function createError (message, code) {
+  var e = new Error(message)
+  e.code = code
+  return e
 }

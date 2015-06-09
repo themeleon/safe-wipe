@@ -19,7 +19,7 @@
     "url": "https://github.com/themeleon/safe-wipe.git"
   },
   "scripts": {
-    "test": "eslint index.js"
+    "test": "standard"
   },
   "dependencies": {
     "extend": "2.*",
@@ -27,6 +27,6 @@
     "rimraf": "2.*"
   },
   "devDependencies": {
-    "eslint": "0.*"
+    "standard": "^4.0.1"
   }
 }
