@@ -22,7 +22,7 @@
     "test": "standard"
   },
   "dependencies": {
-    "extend": "2.*",
+    "extend": "^3.0.2",
     "q": "1.*",
     "rimraf": "2.*"
   },
