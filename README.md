@@ -16,6 +16,8 @@ user's confirmation.
 * Prompt the user for confirmation, and raise an exception if the answer
   is negative.
 
+**Note:** This library requires Node.js v8.0.0 or higher as it uses native JavaScript promises and `util.promisify`.
+
 You can configure the following variables:
 
 | Name                        | Description                                                                                                                                            | Default                     |
@@ -36,7 +38,7 @@ The messages are:
 | `confirm`   | Text to prompt the user to confirm the (not empty) directory wipe.                  |
 | `abort`     | Error message when the user refuses to wipe the folder.                             |
 
-The function is asynchronous and return a promise. Nothing is passed to
+The function is asynchronous and returns a promise. Nothing is passed to
 the success function, but you'll get an `Error` instance in the error
 function. It can have the following `code` property:
 
